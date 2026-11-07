@@ -2,15 +2,17 @@ name: Build NIKO APK
 on: [push]
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip openjdk-17-jdk zip unzip
+          pip3 install --upgrade buildozer cython
       - name: Build APK
-        uses: ArtemSBulgakov/buildozer-action@v1
-        with:
-          workdir: .
-          command: buildozer android debug
-          buildozer_version: stable
+        run: |
+          buildozer android debug
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
