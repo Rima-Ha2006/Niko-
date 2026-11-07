@@ -17,10 +17,23 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev libltdl-dev libgl1-mesa-dev libgles2-mesa-dev
+          sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev libltdl-dev libgl1-mesa-dev libgles2-mesa-dev libtinfo5 libbz2-dev libsqlite3-dev
           pip install buildozer cython==0.29.33
+      - name: Accept Android Licenses
+        run: |
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          yes | sdkmanager --licenses || true
+          export SDK="$HOME/.buildozer/android/platform/android-sdk"
+          mkdir -p $SDK/cmdline-tools
+          if [ -d "$SDK/cmdline-tools/latest/bin" ]; then yes | $SDK/cmdline-tools/latest/bin/sdkmanager --licenses || true; fi
       - name: Build APK
-        run: buildozer android debug
+        run: |
+          yes | buildozer android debug || true
+          export SDK="$HOME/.buildozer/android/platform/android-sdk"
+          if [ -f "$SDK/cmdline-tools/latest/bin/sdkmanager" ]; then yes | $SDK/cmdline-tools/latest/bin/sdkmanager --licenses; fi
+          if [ -f "$SDK/tools/bin/sdkmanager" ]; then yes | $SDK/tools/bin/sdkmanager --licenses; fi
+          buildozer android debug
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
